@@ -1,14 +1,16 @@
 import random from "canvas-sketch-util/random";
+import { lerp } from "canvas-sketch-util/math";
 import Cell from "./Cell";
 
-const calcCoords = ({ x, y, margin, cellWidth }) => {
-  const top = margin + y * cellWidth;
+const calcCoords = ({ u, v, margin, count, cellWidth }) => {
+  const mod = cellWidth / 2;
+  const top = v - mod;
   const bottom = top + cellWidth;
-  const left = margin + x * cellWidth;
+  const left = u - mod;
   const right = left + cellWidth;
   const center = {
-    x: (left + right) / 2,
-    y: (top + bottom) / 2
+    u,
+    v
   };
   return { top, bottom, left, right, center };
 };
@@ -16,11 +18,9 @@ const calcCoords = ({ x, y, margin, cellWidth }) => {
 class Grid {
   constructor({ width, height, margin, count, probability = 1 }) {
     this.count = count;
-    this.width = width;
-    this.height = height;
     this.margin = margin;
     this.probability = probability;
-    this.cellWidth = (width - margin * 2) / count;
+    this.cellWidth = (1 - margin * 2) / count;
     this.cells = this.populate();
   }
 
@@ -29,9 +29,10 @@ class Grid {
     for (let x = 0; x < this.count; x++) {
       for (let y = 0; y < this.count; y++) {
         const coords = calcCoords({
-          x,
-          y,
+          u: lerp(this.margin, 1 - this.margin, x / (this.count - 1)),
+          v: lerp(this.margin, 1 - this.margin, y / (this.count - 1)),
           margin: this.margin,
+          count: this.count,
           cellWidth: this.cellWidth
         });
         const cell = new Cell({
@@ -52,11 +53,13 @@ class Grid {
     });
   }
 
-  draw({ context, playhead }) {
+  draw({ context, playhead, width, height }) {
     this.cells.forEach(cell => {
       return (
         cell.isAlive &&
         cell.draw({
+          width,
+          height,
           context,
           playhead
         })

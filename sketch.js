@@ -10,12 +10,12 @@ const background = palette.shift();
 
 const options = {
   color: () => random.pick(palette),
-  multiplier: random.range(0, 10),
+  multiplier: () => random.range(-10, 10),
   isRegular: () => random.chance(0.5),
   isClockwise: () => random.chance(0.4)
 };
 
-const Constructor = Square;
+const Constructor = Spiral;
 
 const settings = {
   animate: true,
@@ -25,9 +25,9 @@ const settings = {
 };
 
 const sketch = ({ width, height }) => {
-  const count = 15;
-  const margin = width / 8;
-  const probability = 0.35;
+  const count = 4;
+  const margin = 1 / 8;
+  const probability = 0.95;
 
   const grid = new Grid({
     width,
@@ -40,13 +40,15 @@ const sketch = ({ width, height }) => {
 
   grid.update(Constructor, options);
 
-  return ({ context, playhead }) => {
+  return ({ width, height, context, playhead }) => {
     context.lineWidth = random.range(1);
     context.fillStyle = background;
-    context.fillRect(0, 0, grid.width, grid.height);
+    context.fillRect(0, 0, width, height);
     grid.update(Constructor, {});
 
     grid.draw({
+      width,
+      height,
       context,
       playhead
     });
